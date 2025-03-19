@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geolocation Compass</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: radial-gradient(circle, #1e3c72, #2a5298);
+            color: white;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .compass-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.2), rgba(0, 0, 0, 0.2));
+            border-radius: 50%;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        .compass {
+            width: 100%;
+            height: 100%;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Simple_Compass_Rose.svg/512px-Simple_Compass_Rose.svg.png') no-repeat center;
+            background-size: contain;
+            transition: transform 0.2s linear;
+        }
+        .arrow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 120px;
+            background: red;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            transform: translate(-50%, -50%) rotate(0deg);
+            transition: transform 0.2s linear;
+        }
+        .direction-label {
+            position: absolute;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+        }
+        .north { top: 10px; left: 50%; transform: translateX(-50%); }
+        .south { bottom: 10px; left: 50%; transform: translateX(-50%); }
+        .east { right: 10px; top: 50%; transform: translateY(-50%); }
+        .west { left: 10px; top: 50%; transform: translateY(-50%); }
+        .info {
+            margin-top: 20px;
+            font-size: 18px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #ff4500;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Geolocation Compass</h1>
+    <button class="button" id="enableSensor">Enable Compass</button>
+    <div class="compass-container">
+        <div id="compass" class="compass"></div>
+        <div id="arrow" class="arrow"></div>
+        <div class="direction-label north">N</div>
+        <div class="direction-label south">S</div>
+        <div class="direction-label east">E</div>
+        <div class="direction-label west">W</div>
+    </div>
+    <div class="info" id="location-info">Waiting for location...</div>
+    
+    <script>
+        function updateCompass(degree) {
+            document.getElementById("compass").style.transform = `rotate(${-degree}deg)`;
+            document.getElementById("arrow").style.transform = `translate(-50%, -50%) rotate(${degree}deg)`;
+        }
+
+        function showPosition(position) {
+            const { latitude, longitude } = position.coords;
+            document.getElementById("location-info").innerHTML = 
+                `Latitude: ${latitude.toFixed(4)}, Longitude: ${longitude.toFixed(4)}`;
+        }
+
+        function handleError(error) {
+            document.getElementById("location-info").innerText = "Error: Unable to retrieve location.";
+            console.error(error.message);
+        }
+
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(showPosition, handleError, { enableHighAccuracy: true });
+        } else {
+            document.getElementById("location-info").innerText = "Geolocation is not supported by this browser.";
+        }
+
+        document.getElementById("enableSensor").addEventListener("click", function() {
+            if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission().then(permissionState => {
+                    if (permissionState === "granted") {
+                        window.addEventListener("deviceorientation", (event) => {
+                            if (event.alpha !== null) {
+                                updateCompass(event.alpha);
+                            }
+                        });
+                    } else {
+                        alert("Permission denied for motion sensors.");
+                    }
+                }).catch(console.error);
+            } else if (window.DeviceOrientationEvent) {
+                window.addEventListener("deviceorientation", (event) => {
+                    if (event.alpha !== null) {
+                        updateCompass(event.alpha);
+                    }
+                });
+            } else {
+                document.getElementById("location-info").innerText += " Device orientation not supported.";
+            }
+        });
+    </script>
+</body>
+</html>
