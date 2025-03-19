@@ -46,12 +46,13 @@
         .arrow {
             position: absolute;
             width: 10px;
-            height: 80px;
+            height: 90px;
             background: red;
             clip-path: polygon(50% 0%, 100% 100%, 50% 80%, 0% 100%);
+            transform-origin: 50% 50%;
             top: 50%;
             left: 50%;
-            transform-origin: 50% 80%;
+            transform: translate(-50%, -50%) rotate(0deg);
             transition: transform 2s ease-out;
         }
 
@@ -106,7 +107,7 @@
             const randomDirection = directionKeys[Math.floor(Math.random() * directionKeys.length)];
             const angle = directions[randomDirection] + (360 * 3); // Extra spins for animation
 
-            arrow.style.transform = `rotate(${angle}deg)`;
+            arrow.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
         }
 
         function getLocation() {
