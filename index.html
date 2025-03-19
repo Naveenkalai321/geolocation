@@ -7,134 +7,122 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
-            background: radial-gradient(circle, #1e3c72, #2a5298);
-            color: white;
-            margin: 0;
-            height: 100vh;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-        }
-        .compass-container {
-            position: relative;
-            width: 300px;
-            height: 300px;
-            display: flex;
             justify-content: center;
-            align-items: center;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.2), rgba(0, 0, 0, 0.2));
-            border-radius: 50%;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-        }
-        .compass {
-            width: 100%;
-            height: 100%;
-            background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Simple_Compass_Rose.svg/512px-Simple_Compass_Rose.svg.png') no-repeat center;
-            background-size: contain;
-            transition: transform 0.2s linear;
-        }
-        .arrow {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 10px;
-            height: 120px;
-            background: red;
-            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-            transform: translate(-50%, -50%) rotate(0deg);
-            transition: transform 0.2s linear;
-        }
-        .direction-label {
-            position: absolute;
-            font-size: 20px;
-            font-weight: bold;
+            height: 100vh;
+            margin: 0;
+            background: radial-gradient(circle, #1e3c72 10%, #2a5298 50%, #1e3c72 90%);
             color: white;
         }
+
+        .compass-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 5px solid #fff;
+            background: radial-gradient(circle, #ddd 30%, #888);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .compass-container span {
+            position: absolute;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+        }
+
         .north { top: 10px; left: 50%; transform: translateX(-50%); }
         .south { bottom: 10px; left: 50%; transform: translateX(-50%); }
-        .east { right: 10px; top: 50%; transform: translateY(-50%); }
         .west { left: 10px; top: 50%; transform: translateY(-50%); }
+        .east { right: 10px; top: 50%; transform: translateY(-50%); }
+
+        .arrow {
+            position: absolute;
+            width: 10px;
+            height: 80px;
+            background: red;
+            clip-path: polygon(50% 0%, 100% 100%, 50% 80%, 0% 100%);
+            top: 50%;
+            left: 50%;
+            transform-origin: 50% 80%;
+            transition: transform 2s ease-out;
+        }
+
         .info {
             margin-top: 20px;
-            font-size: 18px;
-            background: rgba(0, 0, 0, 0.5);
+            font-size: 16px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
             padding: 10px;
-            border-radius: 10px;
+            border-radius: 5px;
+            backdrop-filter: blur(5px);
         }
-        .button {
+
+        .btn {
             margin-top: 20px;
             padding: 10px 20px;
             font-size: 16px;
-            background: #ff4500;
-            color: white;
+            font-weight: bold;
             border: none;
-            cursor: pointer;
+            background: linear-gradient(to right, #00c6ff, #0072ff);
+            color: white;
             border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.3);
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .btn:hover {
+            background: linear-gradient(to right, #0072ff, #00c6ff);
+            transform: scale(1.05);
         }
     </style>
 </head>
 <body>
-    <h1>Geolocation Compass</h1>
-    <button class="button" id="enableSensor">Enable Compass</button>
     <div class="compass-container">
-        <div id="compass" class="compass"></div>
-        <div id="arrow" class="arrow"></div>
-        <div class="direction-label north">N</div>
-        <div class="direction-label south">S</div>
-        <div class="direction-label east">E</div>
-        <div class="direction-label west">W</div>
+        <div class="arrow" id="arrow"></div>
+        <span class="north">N</span>
+        <span class="south">S</span>
+        <span class="west">W</span>
+        <span class="east">E</span>
     </div>
-    <div class="info" id="location-info">Waiting for location...</div>
     
+    <button class="btn" onclick="rotateCompass()">Find Direction</button>
+    
+    <div class="info" id="location">Latitude: --, Longitude: --</div>
+
     <script>
-        function updateCompass(degree) {
-            document.getElementById("compass").style.transform = `rotate(${-degree}deg)`;
-            document.getElementById("arrow").style.transform = `translate(-50%, -50%) rotate(${degree}deg)`;
+        function rotateCompass() {
+            const arrow = document.getElementById('arrow');
+            const directions = { N: 0, E: 90, S: 180, W: 270 };
+            const directionKeys = Object.keys(directions);
+            const randomDirection = directionKeys[Math.floor(Math.random() * directionKeys.length)];
+            const angle = directions[randomDirection] + (360 * 3); // Extra spins for animation
+
+            arrow.style.transform = `rotate(${angle}deg)`;
         }
 
-        function showPosition(position) {
-            const { latitude, longitude } = position.coords;
-            document.getElementById("location-info").innerHTML = 
-                `Latitude: ${latitude.toFixed(4)}, Longitude: ${longitude.toFixed(4)}`;
-        }
-
-        function handleError(error) {
-            document.getElementById("location-info").innerText = "Error: Unable to retrieve location.";
-            console.error(error.message);
-        }
-
-        if (navigator.geolocation) {
-            navigator.geolocation.watchPosition(showPosition, handleError, { enableHighAccuracy: true });
-        } else {
-            document.getElementById("location-info").innerText = "Geolocation is not supported by this browser.";
-        }
-
-        document.getElementById("enableSensor").addEventListener("click", function() {
-            if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission().then(permissionState => {
-                    if (permissionState === "granted") {
-                        window.addEventListener("deviceorientation", (event) => {
-                            if (event.alpha !== null) {
-                                updateCompass(event.alpha);
-                            }
-                        });
-                    } else {
-                        alert("Permission denied for motion sensors.");
-                    }
-                }).catch(console.error);
-            } else if (window.DeviceOrientationEvent) {
-                window.addEventListener("deviceorientation", (event) => {
-                    if (event.alpha !== null) {
-                        updateCompass(event.alpha);
-                    }
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    document.getElementById('location').innerText = 
+                        `Latitude: ${position.coords.latitude.toFixed(5)}, Longitude: ${position.coords.longitude.toFixed(5)}`;
+                }, error => {
+                    document.getElementById('location').innerText = "Location access denied.";
                 });
             } else {
-                document.getElementById("location-info").innerText += " Device orientation not supported.";
+                document.getElementById('location').innerText = "Geolocation not supported.";
             }
-        });
+        }
+
+        getLocation();
     </script>
 </body>
 </html>
